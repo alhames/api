@@ -1,0 +1,29 @@
+{
+    "name": "alhames/api",
+    "description": "Common API Interface",
+    "keywords": ["api", "api-client", "interface"],
+    "homepage": "https://github.com/alhames/api",
+    "type": "library",
+    "require": {
+        "php": "^7.1",
+        "psr/http-message": "^1.0",
+        "psr/log": "^1.0",
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alhames",
+            "email": "alhames@mail.ru",
+            "homepage": "https://alhames.ru/"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/alhames/api/issues"
+    },
+    "autoload": {
+        "psr-4": {
+            "Alhames\\Api\\": "src/Alhames/Api"
+        }
+    }
+}
