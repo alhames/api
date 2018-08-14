@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Common API Interface package.
+ *
+ * (c) Pavel Logachev <alhames@mail.ru>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Alhames\Api\Authentication;
 
 use Alhames\Api\Exception\ApiExceptionInterface;
@@ -21,16 +30,18 @@ interface AuthenticationClientInterface
     /**
      * @param array $options
      *
-     * @return array
      * @throws ApiExceptionInterface
      * @throws GuzzleException
+     *
+     * @return array
      */
     public function authenticate(array $options = []): array;
 
     /**
-     * @return int|string
      * @throws ApiExceptionInterface
      * @throws GuzzleException
+     *
+     * @return int|string
      */
     public function getAccountId();
 }

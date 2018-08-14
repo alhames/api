@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Common API Interface package.
+ *
+ * (c) Pavel Logachev <alhames@mail.ru>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Alhames\Api;
 
 use Alhames\Api\Exception\ParseContentException;
@@ -54,8 +63,9 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      * @param array|null $files
      * @param array|null $headers
      *
-     * @return string
      * @throws GuzzleException
+     *
+     * @return string
      */
     public function requestContent(string $method, string $uri, ?array $get = null, ?array $post = null, ?array $files = null, ?array $headers = null)
     {
@@ -69,8 +79,9 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      * @param string $uri
      * @param array  $options
      *
-     * @return ResponseInterface
      * @throws GuzzleException
+     *
+     * @return ResponseInterface
      */
     public function request(string $method, string $uri, array $options = []): ResponseInterface
     {
@@ -112,9 +123,10 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      * @param array|null $files
      * @param array|null $headers
      *
-     * @return mixed
      * @throws GuzzleException
      * @throws ParseContentException
+     *
+     * @return mixed
      */
     public function requestJson(string $method, string $uri, ?array $get = null, ?array $post = null, ?array $files = null, ?array $headers = null)
     {
@@ -131,9 +143,10 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      * @param mixed      $data
      * @param array|null $headers
      *
-     * @return mixed
      * @throws GuzzleException
      * @throws ParseContentException
+     *
+     * @return mixed
      */
     public function sendJson(string $method, string $uri, $data, ?array $headers = null)
     {
@@ -155,9 +168,10 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      * @param array|null $files
      * @param array|null $headers
      *
-     * @return array
      * @throws GuzzleException
      * @throws ParseContentException
+     *
+     * @return array
      */
     public function requestKeyValueForm(string $method, string $uri, ?array $get = null, ?array $post = null, ?array $files = null, ?array $headers = null): array
     {
@@ -173,8 +187,9 @@ class HttpClient implements \Serializable, LoggerAwareInterface
     /**
      * @param ResponseInterface $response
      *
-     * @return mixed
      * @throws ParseContentException
+     *
+     * @return mixed
      */
     public function parseJsonResponse(ResponseInterface $response)
     {
@@ -215,7 +230,7 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      */
     public function getConfig(?string $option = null)
     {
-        return $option === null
+        return null === $option
             ? $this->config
             : (isset($this->config[$option]) ? $this->config[$option] : null);
     }
