@@ -32,4 +32,15 @@ abstract class AbstractAuthenticationClient extends AbstractApiClient implements
     {
         return $exception;
     }
+
+    /**
+     * Authorization Endpoint for OAuth2 authorization
+     * or OP Endpoint URL for OpenID2 authentication
+     *
+     * @see https://tools.ietf.org/html/rfc6749#section-3.1
+     * @see https://openid.net/specs/openid-authentication-2_0.html#terminology
+     *
+     * @return string
+     */
+    abstract protected function getAuthEndpoint(): string;
 }

@@ -3,14 +3,13 @@
 namespace Alhames\Api\Authentication;
 
 use Alhames\Api\Exception\AuthenticationException;
-use Alhames\Api\Exception\InvalidArgumentException;
 use Alhames\Api\HttpInterface;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class OpenId2AuthenticationClient.
  *
- * @link http://openid.net/specs/openid-authentication-2_0.html
+ * @link https://openid.net/specs/openid-authentication-2_0.html
  */
 abstract class AbstractOpenId2Client extends AbstractAuthenticationClient
 {
@@ -45,7 +44,7 @@ abstract class AbstractOpenId2Client extends AbstractAuthenticationClient
             'openid.realm' => parse_url($redirectUri, PHP_URL_SCHEME).'://'.parse_url($redirectUri, PHP_URL_HOST),
         ];
 
-        return $this->getEndpoint().'?'.http_build_query($query);
+        return $this->getAuthEndpoint().'?'.http_build_query($query);
     }
 
     /**
@@ -60,26 +59,26 @@ abstract class AbstractOpenId2Client extends AbstractAuthenticationClient
             } elseif (isset($options['openid.'.$field])) {
                 $query['openid.'.$field] = $options['openid.'.$field];
             } else {
-                throw new InvalidArgumentException($field);
+                throw AuthenticationException::invalidArgument($field, $options);
             }
         }
 
         if (self::OPEN_ID_NS !== $query['openid.ns']) {
-            throw new InvalidArgumentException('ns');
+            throw AuthenticationException::invalidArgument('ns', $options);
         }
 
         if ('id_res' === $query['openid.mode']) {
             $query['openid.mode'] = 'check_authentication';
         } else {
-            throw new InvalidArgumentException('mode');
+            throw AuthenticationException::invalidArgument('mode', $options);
         }
 
-        if ($this->getEndpoint() !== $query['openid.op_endpoint']) {
-            throw new InvalidArgumentException('op_endpoint');
+        if ($this->getAuthEndpoint() !== $query['openid.op_endpoint']) {
+            throw AuthenticationException::invalidArgument('op_endpoint', $options);
         }
 
         if ($this->getRedirectUriWithState($options['state'] ?? null) !== $query['openid.return_to']) {
-            throw new InvalidArgumentException('return_to');
+            throw AuthenticationException::invalidArgument('return_to', $options);
         }
 
         if (isset($options['openid_claimed_id'], $options['openid_identity'])) {
@@ -91,7 +90,7 @@ abstract class AbstractOpenId2Client extends AbstractAuthenticationClient
         }
 
         try {
-            $data = $this->httpClient->requestKeyValueForm(HttpInterface::METHOD_POST, $this->getEndpoint(), $query);
+            $data = $this->httpClient->requestKeyValueForm(HttpInterface::METHOD_POST, $this->getAuthEndpoint(), $query);
         } catch (GuzzleException $e) {
             throw $this->handleApiException($e);
         }
@@ -101,11 +100,6 @@ abstract class AbstractOpenId2Client extends AbstractAuthenticationClient
 
         return array_merge($query, $data);
     }
-
-    /**
-     * @return string
-     */
-    abstract protected function getEndpoint(): string;
 
     /**
      * @param string|null $state

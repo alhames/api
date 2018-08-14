@@ -22,7 +22,10 @@ abstract class AbstractApiClient implements ApiClientInterface
     public function __construct(array $config)
     {
         $this->httpClient = new HttpClient($config['qps'] ?? null, $config['http_client'] ?? []);
-        if (isset($config['logger']) && $config['logger'] instanceof LoggerInterface) {
+        if (isset($config['logger'])) {
+            if (!$config['logger'] instanceof LoggerInterface) {
+                throw new \InvalidArgumentException('Argument "logger" must implement Psr\Log\LoggerInterface.');
+            }
             $this->httpClient->setLogger($config['logger']);
         }
 
@@ -36,4 +39,11 @@ abstract class AbstractApiClient implements ApiClientInterface
     {
         return $this->httpClient;
     }
+
+    /**
+     * @param string $method
+     *
+     * @return string
+     */
+    abstract protected function getApiEndpoint(string $method): string;
 }

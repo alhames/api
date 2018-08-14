@@ -3,12 +3,13 @@
 namespace Alhames\Api\Authentication;
 
 use Alhames\Api\Exception\AuthenticationException;
-use Alhames\Api\Exception\InvalidArgumentException;
 use Alhames\Api\HttpInterface;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class OAuth2AuthenticationHelper.
+ *
+ * @see https://tools.ietf.org/html/rfc6749
  */
 abstract class AbstractOAuth2Client extends AbstractAuthenticationClient
 {
@@ -71,7 +72,7 @@ abstract class AbstractOAuth2Client extends AbstractAuthenticationClient
             $query['state'] = $state;
         }
 
-        return $this->getBaseAuthenticationUri().'?'.http_build_query($query);
+        return $this->getAuthEndpoint().'?'.http_build_query($query);
     }
 
     /**
@@ -80,7 +81,7 @@ abstract class AbstractOAuth2Client extends AbstractAuthenticationClient
     public function authenticate(array $options = []): array
     {
         if (empty($options['code']) || !is_string($options['code'])) {
-            throw new InvalidArgumentException('code');
+            throw AuthenticationException::invalidArgument('code', $options);
         }
 
         $query = [
@@ -92,7 +93,7 @@ abstract class AbstractOAuth2Client extends AbstractAuthenticationClient
         ];
 
         try {
-            $data = (array) $this->httpClient->requestJson(HttpInterface::METHOD_POST, $this->getTokenUri(), null, $query);
+            $data = (array) $this->httpClient->requestJson(HttpInterface::METHOD_POST, $this->getTokenEndpoint(), null, $query);
         } catch (GuzzleException $e) {
             throw $this->handleApiException($e);
         }
@@ -119,6 +120,8 @@ abstract class AbstractOAuth2Client extends AbstractAuthenticationClient
     }
 
     /**
+     * @see https://tools.ietf.org/html/rfc6749#section-1.4
+     *
      * @return null|string
      */
     public function getAccessToken(): ?string
@@ -128,10 +131,12 @@ abstract class AbstractOAuth2Client extends AbstractAuthenticationClient
 
     /**
      * {@inheritdoc}
+     *
+     * @see https://tools.ietf.org/html/rfc6750#section-2.1
      */
     public function request(string $method, array $query = [], string $httpMethod = HttpInterface::METHOD_GET)
     {
-        $uri = $this->getApiUri($method);
+        $uri = $this->getApiEndpoint($method);
         $get = HttpInterface::METHOD_GET === $httpMethod ? $query : null;
         $post = HttpInterface::METHOD_GET !== $httpMethod ? $query : null;
         $headers = null !== $this->accessToken ? [HttpInterface::HEADER_AUTHORIZATION => 'Bearer '.$this->accessToken] : null;
@@ -144,19 +149,9 @@ abstract class AbstractOAuth2Client extends AbstractAuthenticationClient
     }
 
     /**
-     * @param string $method
+     * @see https://tools.ietf.org/html/rfc6749#section-3.2
      *
      * @return string
      */
-    abstract protected function getApiUri(string $method): string;
-
-    /**
-     * @return string
-     */
-    abstract protected function getBaseAuthenticationUri(): string;
-
-    /**
-     * @return string
-     */
-    abstract protected function getTokenUri(): string;
+    abstract protected function getTokenEndpoint(): string;
 }

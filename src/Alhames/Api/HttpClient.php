@@ -85,30 +85,20 @@ class HttpClient implements \Serializable, LoggerAwareInterface
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
+            $response = $e->getResponse();
+            throw $e;
+        } finally {
             $this->lastRequestTime = microtime(true);
             if (null !== $this->logger) {
-                $response = $e->getResponse();
-                $this->logger->debug(sprintf('%d %s %s', $response->getStatusCode(), $method, $uri), [
+                $statusCode = !empty($response) ? $response->getStatusCode() : 0;
+                $this->logger->debug(sprintf('"%s %s" %d', $method, $uri, $statusCode), [
                     'method' => $method,
                     'uri' => $uri,
                     'options' => $options,
                     'time' => $this->lastRequestTime,
-                    'response' => $response,
+                    'response' => $response ?? null,
                 ]);
             }
-
-            throw $e;
-        }
-
-        $this->lastRequestTime = microtime(true);
-        if (null !== $this->logger) {
-            $this->logger->debug(sprintf('%d %s %s', $response->getStatusCode(), $method, $uri), [
-                'method' => $method,
-                'uri' => $uri,
-                'options' => $options,
-                'time' => $this->lastRequestTime,
-                'response' => $response,
-            ]);
         }
 
         return $response;
@@ -166,8 +156,8 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      * @param array|null $headers
      *
      * @return array
-     * @throws ParseContentException
      * @throws GuzzleException
+     * @throws ParseContentException
      */
     public function requestKeyValueForm(string $method, string $uri, ?array $get = null, ?array $post = null, ?array $files = null, ?array $headers = null): array
     {
@@ -231,6 +221,9 @@ class HttpClient implements \Serializable, LoggerAwareInterface
     }
 
     /**
+     * @todo Fix load from uri
+     * @todo Fix load from string
+     *
      * @param array|null $get
      * @param array|null $post
      * @param array|null $files
@@ -241,7 +234,7 @@ class HttpClient implements \Serializable, LoggerAwareInterface
     private function prepareOptions(?array $get = null, ?array $post = null, ?array $files = null, ?array $headers = null): array
     {
         $options = [
-            RequestOptions::QUERY => $get,
+            RequestOptions::QUERY => $get ?: [],
             RequestOptions::HEADERS => $headers ?: [],
         ];
         if (!empty($files)) {
@@ -252,9 +245,9 @@ class HttpClient implements \Serializable, LoggerAwareInterface
             foreach ($files as $key => $file) {
                 if ($file instanceof \SplFileInfo) {
                     $fileName = $file->getFilename();
-                    $contents = $file->isFile() ? fopen($file->getRealPath(), 'r') : file_get_contents($file->getPathname()); // todo
+                    $contents = $file->isFile() ? fopen($file->getRealPath(), 'r') : file_get_contents($file->getPathname());
                 } else {
-                    $fileName = $key; // todo
+                    $fileName = $key;
                     $contents = $file;
                 }
                 $elements[] = ['name' => $key, 'contents' => $contents, 'filename' => $fileName];

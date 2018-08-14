@@ -31,4 +31,15 @@ class AuthenticationException extends \RuntimeException implements ApiExceptionI
     {
         return $this->data;
     }
+
+    /**
+     * @param string $argument
+     * @param array  $data
+     *
+     * @return static
+     */
+    public static function invalidArgument(string $argument, array $data)
+    {
+        return new static($data, sprintf('Argument "%s" is empty or invalid.', $argument));
+    }
 }
