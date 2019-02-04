@@ -11,6 +11,7 @@
 
 namespace Alhames\Api\Exception;
 
+use Alhames\Api\HttpClient;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 
@@ -34,7 +35,7 @@ class ParseContentException extends \RuntimeException implements ApiExceptionInt
     public function __construct(ResponseInterface $response, string $format, \Throwable $previous = null)
     {
         $summary = RequestException::getResponseBodySummary($response);
-        parent::__construct(sprintf('Expected %s format, got "%s".', $format, $summary), 0, $previous);
+        parent::__construct(sprintf('Expected %s format, got "%s": %s.', $format, HttpClient::getContentType($response), $summary), 0, $previous);
         $this->response = $response;
         $this->format = $format;
     }

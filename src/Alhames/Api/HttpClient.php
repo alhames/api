@@ -56,6 +56,25 @@ class HttpClient implements \Serializable, LoggerAwareInterface
     }
 
     /**
+     * @param ResponseInterface $response
+     *
+     * @return null|string
+     */
+    public static function getContentType(ResponseInterface $response): ?string
+    {
+        $contentTypes = $response->getHeader(HttpInterface::HEADER_CONTENT_TYPE);
+        if (empty($contentTypes[0])) {
+            return null;
+        }
+
+        if (false === strpos($contentTypes[0], ';')) {
+            return $contentTypes[0];
+        }
+
+        return substr($contentTypes[0], 0, strpos($contentTypes[0], ';'));
+    }
+
+    /**
      * @param string     $method
      * @param string     $uri
      * @param array|null $get
@@ -193,8 +212,7 @@ class HttpClient implements \Serializable, LoggerAwareInterface
      */
     public function parseJsonResponse(ResponseInterface $response)
     {
-        $contentTypes = $response->getHeader(HttpInterface::HEADER_CONTENT_TYPE);
-        if (!empty($contentTypes) && 0 !== strpos($contentTypes[0], 'application/json')) {
+        if (!in_array(static::getContentType($response), ['application/json', 'application/javascript', 'text/javascript'], true)) {
             throw new ParseContentException($response, 'json');
         }
 
